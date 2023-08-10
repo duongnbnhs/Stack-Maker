@@ -17,7 +17,8 @@ public class Player : MonoBehaviour
     [SerializeField] Transform brickHold;
     [SerializeField] Transform player;
     List<Transform> playerbrickList = new List<Transform>();
-
+    public Animator anim;
+    string currentAnim;
     // Start is called before the first frame update
     void Start()
     {
@@ -27,7 +28,7 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(GameManager.Instance.IsState(GameState.Play))
+        if (GameManager.Instance.IsState(GameState.Play))
         {
             if (!isMoving)
             {
@@ -55,19 +56,30 @@ public class Player : MonoBehaviour
                 if (Vector3.Distance(transform.position, targetPoint) < 0.1f)
                 {
                     isMoving = false;
+                    ChangeAnim("Idle");
                 }
                 transform.position = Vector3.MoveTowards(transform.position, targetPoint, Time.deltaTime * speed);
             }
         }
-        
 
+
+    }
+    public void ChangeAnim(string animName)
+    {
+        if (currentAnim != animName)
+        {
+            anim.ResetTrigger(currentAnim);
+            currentAnim = animName;
+            anim.SetTrigger(currentAnim);
+        }
     }
     public void OnInit()
     {
         isMoving = false;
         isControl = false;
         ClearBrick();
-        player.localPosition = Vector3.zero;
+        player.localPosition = Vector3.down;
+        ChangeAnim("Idle");
     }
     Vector3 GetLastPoint(Direct direct)
     {
@@ -133,6 +145,7 @@ public class Player : MonoBehaviour
         playerBrick.localPosition = Vector3.down + index * 0.25f * Vector3.up;
         playerbrickList.Add(playerBrick);
         player.localPosition = player.localPosition + Vector3.up * 0.25f;
+        ChangeAnim("Jump");
     }
     public void RemoveBrick()
     {
@@ -143,11 +156,12 @@ public class Player : MonoBehaviour
             playerbrickList.RemoveAt(index);
             Destroy(playerBrick.gameObject);
             player.localPosition = player.localPosition - Vector3.up * 0.25f;
+            ChangeAnim("Fall");
         }
     }
     public void ClearBrick()
     {
-        foreach(Transform playerBrick in playerbrickList)
+        foreach (Transform playerBrick in playerbrickList)
         {
             Destroy(playerBrick.gameObject);
         }
